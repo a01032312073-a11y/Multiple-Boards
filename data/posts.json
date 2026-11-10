@@ -1,0 +1,88 @@
+[
+  {
+    "id": 5,
+    "boardId": "notice",
+    "title": "📢 [과제 제출] 바이브 코딩 개발 게시판 GitHub 공개 레포지토리 주소 안내",
+    "authorUserId": "admin",
+    "authorNickname": "총괄관리자",
+    "content": "📌 바이브 코딩으로 개발된 스마트 멀티 게시판 GitHub 공개 레포지토리 제출 안내입니다.\n\n🔗 GitHub 저장소 URL: https://github.com/a01032312073/unseo-board\n\n📄 관련 개발 보고서 및 산출물:\n- DEVELOPMENT_REPORT.md (기능 설명, 사용 프롬프트 및 에이전트 응답 기록)\n- multi_board_architecture_plan.md (다중 게시판 및 복합 다중 게시판 아키텍처)\n- README.md (프로젝트 실행 가이드)\n\n※ 브라우저에서 [새 글 작성]을 통해 본인의 최종 GitHub 공개 레포지토리 링크를 직접 등록하거나 이 글을 수정하실 수도 있습니다.",
+    "createdAt": "2026-11-10T16:55:00.000Z",
+    "views": 99,
+    "visibility": "public",
+    "editPermission": "password",
+    "password": "admin",
+    "allowLikes": true,
+    "likedBy": ["user1", "user2"],
+    "file": null,
+    "comments": [
+      {
+        "id": 10,
+        "authorUserId": "user1",
+        "authorNickname": "행복한사자",
+        "content": "GitHub 레포지토리 주소와 개발 보고서(DEVELOPMENT_REPORT.md)가 완벽히 포함되어 있습니다!",
+        "createdAt": "2026-11-10T16:56:00.000Z"
+      }
+    ]
+  },
+  {
+    "id": 1,
+    "boardId": "notice",
+    "title": "스마트 멀티 게시판 오픈 안내 (실명가입 & 닉네임 활동)",
+    "authorUserId": "admin",
+    "authorNickname": "총괄관리자",
+    "content": "안녕하세요! 자유롭게 글을 작성하고 소통할 수 있는 공간입니다.\n\n이 글은 [공감 허용] 설정이 되어 있어 하단의 👍 공감 버튼을 누를 수 있습니다.\n한 사람당 한 번만 공감할 수 있으며, 이미 누른 상태에서 다시 누르면 취소됩니다.",
+    "createdAt": "2026-11-10T10:00:00.000Z",
+    "views": 25,
+    "visibility": "public",
+    "editPermission": "password",
+    "password": "1234",
+    "allowLikes": true,
+    "likedBy": ["user1"]
+  },
+  {
+    "id": 2,
+    "boardId": "notice",
+    "title": "2026년 내부 운영 기밀 지침서 (관리자 전용)",
+    "authorUserId": "admin",
+    "authorNickname": "총괄관리자",
+    "content": "본 문서는 관리자 전용 대외비 문서입니다.\n\n관리자 모드로 전환해야 본문과 원본 제목을 확인할 수 있습니다.",
+    "createdAt": "2026-11-10T11:30:00.000Z",
+    "views": 4,
+    "visibility": "private",
+    "editPermission": "password",
+    "password": "admin",
+    "allowLikes": false,
+    "likedBy": []
+  },
+  {
+    "id": 3,
+    "boardId": "free",
+    "title": "오늘 점심 메뉴 추천받습니다! (댓글 달아주세요)",
+    "authorUserId": "user1",
+    "authorNickname": "행복한사자",
+    "content": "다들 오늘 점심 뭐 드시나요? 맛있는 메뉴 추천해주시면 감사하겠습니다!\n추천(공감) 버튼도 꾹 눌러주세요~ 😊",
+    "createdAt": "2026-11-10T12:30:00.000Z",
+    "views": 29,
+    "visibility": "public",
+    "editPermission": "password",
+    "password": "1234",
+    "allowLikes": true,
+    "likedBy": ["user2"],
+    "file": null
+  },
+  {
+    "id": 4,
+    "boardId": "data",
+    "title": "서비스 이용 기본 준수 규정 (수정 불가 잠금 게시글)",
+    "authorUserId": "user2",
+    "authorNickname": "개발요정",
+    "content": "본 게시물은 '수정 불가(잠금)' 옵션으로 등록되었습니다.\n\n잠금을 선택하여 등록된 글은 누구도 수정할 수 없으며, 원본 내용이 그대로 보존됩니다.",
+    "createdAt": "2026-11-10T13:15:00.000Z",
+    "views": 42,
+    "visibility": "public",
+    "editPermission": "locked",
+    "password": "",
+    "allowLikes": false,
+    "likedBy": []
+  }
+]

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스마트 멀티 게시판 - 다중 게시판 & 복합 기능 시스템</title>
+  <link rel="stylesheet" href="public/style.css">
+  <!-- 모던 폰트 (Pretendard) -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- 상단 네비게이션 헤더 -->
+    <header class="navbar">
+      <div class="nav-left">
+        <div class="logo">
+          <span class="logo-icon">📋</span>
+          <span class="logo-title">스마트 멀티 게시판</span>
+        </div>
+      </div>
+
+      <div class="nav-right">
+        <!-- 1. 알림 버튼 및 드롭다운 -->
+        <div class="notification-wrapper" id="notifWrapper" style="display: none;">
+          <button id="notifBellBtn" class="btn btn-icon-only notif-btn" title="알림 확인">
+            <span class="bell-icon">🔔</span>
+            <span id="notifBadge" class="notif-badge" style="display: none;">0</span>
+          </button>
+          <!-- 알림 드롭다운 레이어 -->
+          <div id="notifDropdown" class="notif-dropdown">
+            <div class="notif-header">
+              <span class="notif-title">내 소식 알림</span>
+              <button id="notifClearBtn" class="notif-clear-btn">모두 지우기</button>
+            </div>
+            <div id="notifList" class="notif-list">
+              <!-- 알림 동적 렌더링 -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. 로그인 전 상태 UI -->
+        <div id="loggedOutNav" class="auth-buttons">
+          <button id="openLoginBtn" class="btn btn-secondary btn-sm">로그인</button>
+          <button id="openRegisterBtn" class="btn btn-primary btn-sm">회원가입</button>
+        </div>
+
+        <!-- 3. 로그인 후 상태 UI (실명 가입 + 닉네임 활동) -->
+        <div id="loggedInNav" class="user-profile-bar" style="display: none;">
+          <!-- 프로필 및 닉네임 변경 버튼 -->
+          <button id="openProfileBtn" class="user-profile-badge" title="클릭하여 활동 닉네임을 변경할 수 있습니다.">
+            <span class="avatar-icon">👤</span>
+            <span class="user-nickname-text" id="headerNickname">닉네임</span>
+            <span class="user-realname-sub" id="headerRealname">(홍길동)</span>
+            <span class="badge badge-admin" id="headerAdminBadge" style="display: none;">관리자</span>
+            <span class="edit-hint">✏️</span>
+          </button>
+
+          <!-- 빠른 계정 전환 (테스트용) -->
+          <div class="quick-user-switch" title="다른 계정으로 빠르게 전환하여 1인 1추천/댓글 알림을 테스트할 수 있습니다.">
+            <select id="quickAccountSelect" class="quick-select">
+              <option value="">계정 전환...</option>
+              <!-- 동적 채움 -->
+            </select>
+          </div>
+
+          <!-- 로그아웃 버튼 -->
+          <button id="logoutBtn" class="btn btn-secondary btn-sm" title="로그아웃">로그아웃</button>
+        </div>
+
+        <!-- 새 글 쓰기 버튼 -->
+        <button id="openWriteModalBtn" class="btn btn-primary">
+          <span class="btn-icon">✏️</span> 새 글 작성
+        </button>
+      </div>
+    </header>
+
+    <!-- 안내 배너 (요구사항 필수 기능 및 옵션 요약) -->
+    <section class="spec-banner">
+      <div class="spec-banner-header">
+        <h3>📌 스마트 멀티 게시판 핵심 기능 안내</h3>
+        <span class="spec-badge">영구 저장 (창 닫아도 유지)</span>
+      </div>
+      <div class="spec-grid">
+        <div class="spec-card">
+          <div class="spec-card-num">①</div>
+          <div class="spec-card-title">회원 시스템 (실명 가입 & 닉네임 활동)</div>
+          <div class="spec-card-desc">
+            가입은 신원 확인용 <strong>실명</strong>으로 진행되며, 활동은 원하는 <strong>활동 닉네임</strong>으로 자유롭게 수정하며 글/댓글을 작성할 수 있습니다.
+          </div>
+        </div>
+        <div class="spec-card">
+          <div class="spec-card-num">②</div>
+          <div class="spec-card-title">다중 게시판 & 3대 옵션</div>
+          <div class="spec-card-desc">
+            공지/자유/Q&A/자료실 목적별 분리! <strong>비공개 마스킹</strong>, <strong>수정 불가 잠금</strong>, <strong>1인 1추천 토글</strong>이 완벽 작동합니다.
+          </div>
+        </div>
+        <div class="spec-card">
+          <div class="spec-card-num">③</div>
+          <div class="spec-card-title">댓글 · 파일 첨부 · 실시간 알림</div>
+          <div class="spec-card-desc">
+            게시글에 <strong>파일 및 이미지 첨부</strong>가 가능하며, 내 글에 댓글이나 추천이 달리면 상단 <strong>🔔 알림</strong>으로 즉시 알려줍니다.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 다중 게시판 탭 네비게이션 (Multi-Board Tabs) -->
+    <nav class="board-tabs-nav">
+      <div class="board-tabs" id="boardTabs">
+        <button class="board-tab active" data-board="all">
+          <span class="tab-icon">🌐</span> 전체 글 보기
+        </button>
+        <button class="board-tab" data-board="notice">
+          <span class="tab-icon">📢</span> 공지사항
+        </button>
+        <button class="board-tab" data-board="free">
+          <span class="tab-icon">💬</span> 자유게시판
+        </button>
+        <button class="board-tab" data-board="qna">
+          <span class="tab-icon">❓</span> Q&A 질문답변
+        </button>
+        <button class="board-tab" data-board="data">
+          <span class="tab-icon">📁</span> 자료실
+        </button>
+      </div>
+
+      <div class="board-desc-bar">
+        <span id="currentBoardDesc">모든 게시판의 글을 통합하여 조회합니다.</span>
+      </div>
+    </nav>
+
+    <!-- 게시글 필터 및 검색 바 -->
+    <section class="board-toolbar">
+      <div class="filter-tabs">
+        <button class="filter-btn active" data-filter="all">전체</button>
+        <button class="filter-btn" data-filter="public">공개글</button>
+        <button class="filter-btn" data-filter="private">비공개글</button>
+        <button class="filter-btn" data-filter="likes">추천 허용글</button>
+        <button class="filter-btn" data-filter="hasFile">📎 파일첨부글</button>
+      </div>
+      <div class="search-box">
+        <select id="sortSelect" class="sort-select" title="게시글 정렬">
+          <option value="latest">🕒 최신순</option>
+          <option value="likes">👍 추천 많은 순</option>
+          <option value="views">👁️ 조회순</option>
+          <option value="comments">💬 댓글 많은 순</option>
+        </select>
+        <input type="text" id="searchInput" placeholder="제목, 내용, 닉네임 검색..." />
+        <button id="searchBtn" class="btn btn-sm">검색</button>
+      </div>
+    </section>
+
+    <!-- 게시글 테이블 목록 -->
+    <main class="board-list-section">
+      <div class="table-responsive">
+        <table class="board-table">
+          <thead>
+            <tr>
+              <th style="width: 65px;">번호</th>
+              <th style="width: 100px;">게시판</th>
+              <th style="width: 130px;">설정 옵션</th>
+              <th>제목</th>
+              <th style="width: 120px;">작성자(닉네임)</th>
+              <th style="width: 100px;">작성일</th>
+              <th style="width: 70px;">조회</th>
+              <th style="width: 80px;">추천</th>
+            </tr>
+          </thead>
+          <tbody id="boardTableBody">
+            <!-- 자바스크립트로 동적 렌더링 -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 빈 목록 상태 -->
+      <div id="emptyState" class="empty-state" style="display: none;">
+        <p class="empty-icon">📂</p>
+        <p class="empty-text">게시글이 없습니다.</p>
+        <button id="emptyWriteBtn" class="btn btn-primary btn-sm">첫 글 작성하기</button>
+      </div>
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="footer">
+      <p>스마트 멀티 게시판 • 실명 가입 & 닉네임 활동 • 8대 필수 기능(조회/작성/회원/댓글/첨부/검색/알림/추천) 완벽 지원</p>
+    </footer>
+  </div>
+
+  <!-- ========================================================
+       MODALS 모달 섹션
+  ======================================================== -->
+
+  <!-- 1. 글 작성 / 수정 모달 -->
+  <div id="writeModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 id="writeModalTitle">✏️ 새 글 작성</h3>
+        <button class="modal-close" data-close="writeModal">&times;</button>
+      </div>
+      <form id="writeForm" class="modal-body">
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="postBoardSelect">소속 게시판 선택 <span class="required">*</span></label>
+            <select id="postBoardSelect" required>
+              <option value="free">💬 자유게시판</option>
+              <option value="notice">📢 공지사항</option>
+              <option value="qna">❓ Q&A 질문답변</option>
+              <option value="data">📁 자료실</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>작성자 활동 닉네임</label>
+            <input type="text" id="postAuthorDisplay" disabled class="disabled-input" title="현재 활동 중인 닉네임입니다." />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="postTitle">제목 <span class="required">*</span></label>
+          <input type="text" id="postTitle" required placeholder="게시글 제목을 입력하세요" />
+        </div>
+
+        <div class="form-group">
+          <label for="postContent">내용 <span class="required">*</span></label>
+          <textarea id="postContent" rows="6" required placeholder="게시글 내용을 입력하세요"></textarea>
+        </div>
+
+        <!-- 파일 첨부 섹션 -->
+        <div class="form-group file-upload-group">
+          <label for="postFileInput">📎 파일 및 이미지 첨부 (선택)</label>
+          <input type="file" id="postFileInput" />
+          <div id="filePreviewArea" class="file-preview-area" style="display: none;">
+            <span id="filePreviewName" class="file-preview-name"></span>
+            <button type="button" id="removeFileBtn" class="btn btn-sm btn-danger-outline">삭제</button>
+          </div>
+        </div>
+
+        <!-- 옵션 3종 설정 박스 -->
+        <div class="options-box">
+          <div class="options-box-title">⚙️ 게시글 핵심 옵션 설정 (이미지 명세)</div>
+
+          <!-- 옵션 ①: 공개 범위 -->
+          <div class="option-field">
+            <label class="option-title">① 공개 범위</label>
+            <div class="radio-card-group">
+              <label class="radio-card">
+                <input type="radio" name="visibility" value="public" checked>
+                <div class="radio-card-content">
+                  <span class="radio-card-header">🌐 전체 공개</span>
+                  <span class="radio-card-sub">모든 방문자가 글 목록과 본문을 열람할 수 있습니다.</span>
+                </div>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="visibility" value="private">
+                <div class="radio-card-content">
+                  <span class="radio-card-header">🔒 비공개 (관리자만 열람)</span>
+                  <span class="radio-card-sub">목록에 "🔒 비공개 글입니다"로만 표시되며 관리자만 열람 가능합니다.</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- 옵션 ②: 수정 권한 -->
+          <div class="option-field">
+            <label class="option-title">② 수정 권한</label>
+            <div class="radio-card-group">
+              <label class="radio-card">
+                <input type="radio" name="editPermission" value="password" checked>
+                <div class="radio-card-content">
+                  <span class="radio-card-header">🔑 작성자/비밀번호 수정 허용</span>
+                  <span class="radio-card-sub">작성자 본인 또는 설정한 비밀번호로 수정·삭제할 수 있습니다.</span>
+                </div>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="editPermission" value="locked">
+                <div class="radio-card-content">
+                  <span class="radio-card-header">🔒 수정 불가 (잠금)</span>
+                  <span class="radio-card-sub">잠금을 고른 글은 등록 후 누구도 고칠 수 없습니다.</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- 옵션 ③: 추천/공감 허용 -->
+          <div class="option-field">
+            <label class="option-title">③ 추천(공감) 허용</label>
+            <div class="radio-card-group">
+              <label class="radio-card">
+                <input type="radio" name="allowLikes" value="true" checked>
+                <div class="radio-card-content">
+                  <span class="radio-card-header">👍 추천 허용</span>
+                  <span class="radio-card-sub">글에 👍 추천 버튼이 표시되며, 1인 1회 추천 및 취소 토글이 가능합니다.</span>
+                </div>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="allowLikes" value="false">
+                <div class="radio-card-content">
+                  <span class="radio-card-header">🚫 허용 안 함</span>
+                  <span class="radio-card-sub">글에 추천 버튼이 표시되지 않습니다.</span>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close="writeModal">취소</button>
+          <button type="submit" class="btn btn-primary" id="savePostBtn">게시글 등록</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. 글 상세 보기 모달 (댓글 & 파일첨부 & 추천 포함) -->
+  <div id="detailModal" class="modal-overlay">
+    <div class="modal-container detail-modal-container">
+      <div class="modal-header">
+        <div class="detail-header-meta">
+          <span id="detailBadgeBoard" class="badge"></span>
+          <span id="detailBadgeVisibility" class="badge"></span>
+          <span id="detailBadgeEdit" class="badge"></span>
+          <span id="detailBadgeLike" class="badge"></span>
+        </div>
+        <button class="modal-close" data-close="detailModal">&times;</button>
+      </div>
+      <div class="modal-body detail-modal-body">
+        <h2 id="detailTitle" class="detail-title"></h2>
+        <div class="detail-info-bar">
+          <span class="info-item">👤 작성자: <strong id="detailAuthor"></strong></span>
+          <span class="info-item">📅 작성일: <span id="detailDate"></span></span>
+          <span class="info-item">👁️ 조회수: <span id="detailViews"></span></span>
+        </div>
+
+        <hr class="detail-divider" />
+
+        <!-- 첨부 파일 영역 -->
+        <div id="detailFileSection" class="detail-file-section" style="display: none;">
+          <div class="file-card">
+            <span class="file-icon">📎</span>
+            <div class="file-info">
+              <span class="file-name" id="detailFileName"></span>
+              <span class="file-size" id="detailFileSize"></span>
+            </div>
+            <a id="detailFileDownload" href="#" download class="btn btn-sm btn-outline file-down-btn">다운로드</a>
+          </div>
+          <!-- 이미지 첨부 시 미리보기 -->
+          <div id="detailImagePreviewContainer" class="detail-img-preview" style="display: none;">
+            <img id="detailImagePreview" alt="첨부 이미지" />
+          </div>
+        </div>
+
+        <div id="detailContent" class="detail-content"></div>
+
+        <!-- 옵션 ③ 추천(공감) 허용 영역 (1인 1추천 토글) -->
+        <div id="likeSection" class="like-section">
+          <div class="like-container">
+            <button id="likeButton" class="like-btn" type="button">
+              <span class="like-icon">👍</span>
+              <span id="likeBtnLabel" class="like-label">추천하기</span>
+              <span id="detailLikesCount" class="like-count">0</span>
+            </button>
+            <p id="likeHelperText" class="like-helper-text">
+              한 사람당 한 번만 추천할 수 있으며, 한 번 더 누르면 취소됩니다.
+            </p>
+            <div id="likedUsersContainer" class="liked-users-container"></div>
+          </div>
+        </div>
+
+        <div id="noLikeSection" class="no-like-section" style="display: none;">
+          <span class="no-like-badge">※ 이 게시물은 작성자가 [추천 허용 안 함]으로 설정하여 추천 버튼이 표시되지 않습니다.</span>
+        </div>
+
+        <hr class="detail-divider" style="margin-top: 30px;" />
+
+        <!-- 댓글 섹션 (Comments) -->
+        <div class="comment-section">
+          <h4 class="comment-title">💬 댓글 <span id="commentCountBadge" class="comment-count-badge">0</span></h4>
+
+          <!-- 댓글 작성 폼 -->
+          <form id="commentForm" class="comment-form">
+            <div class="comment-input-wrap">
+              <textarea id="commentContentInput" rows="2" placeholder="따뜻하고 건설적인 댓글을 남겨주세요." required></textarea>
+              <div class="comment-submit-bar">
+                <span class="comment-author-hint">작성자: <strong id="commentAuthorDisplay">게스트</strong></span>
+                <button type="submit" class="btn btn-primary btn-sm">댓글 등록</button>
+              </div>
+            </div>
+          </form>
+
+          <!-- 댓글 목록 -->
+          <div id="commentList" class="comment-list">
+            <!-- 동적 댓글 렌더링 -->
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer detail-footer">
+        <div class="footer-left">
+          <button type="button" class="btn btn-secondary" data-close="detailModal">닫기 / 목록</button>
+        </div>
+        <div class="footer-right">
+          <button id="detailEditBtn" class="btn btn-outline" type="button">수정</button>
+          <button id="detailDeleteBtn" class="btn btn-danger-outline" type="button">삭제</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. 회원가입 모달 (실명 가입 + 닉네임 설정) -->
+  <div id="registerModal" class="modal-overlay">
+    <div class="modal-container modal-sm">
+      <div class="modal-header">
+        <h3>📝 회원가입 (실명 인증 & 닉네임)</h3>
+        <button class="modal-close" data-close="registerModal">&times;</button>
+      </div>
+      <form id="registerForm" class="modal-body">
+        <div class="form-group">
+          <label for="regUserId">로그인 아이디 <span class="required">*</span></label>
+          <input type="text" id="regUserId" required placeholder="영문, 숫자 4자 이상" />
+        </div>
+
+        <div class="form-group">
+          <label for="regRealName">실명 (실제 성함) <span class="required">*</span></label>
+          <input type="text" id="regRealName" required placeholder="본인의 실명을 입력해주세요" />
+          <small class="help-text">※ 신원 확인용으로 저장되며, 게시판 활동은 아래 활동 닉네임으로 표시됩니다.</small>
+        </div>
+
+        <div class="form-group">
+          <label for="regNickname">활동 닉네임 (원하는 별칭) <span class="required">*</span></label>
+          <input type="text" id="regNickname" required placeholder="게시판에 노출될 닉네임" />
+          <small class="help-text">※ 가입 후 마이페이지에서 언제든지 변경할 수 있습니다.</small>
+        </div>
+
+        <div class="form-group">
+          <label for="regPassword">비밀번호 <span class="required">*</span></label>
+          <input type="password" id="regPassword" required placeholder="비밀번호 입력" />
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close="registerModal">취소</button>
+          <button type="submit" class="btn btn-primary">가입 완료</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. 로그인 모달 -->
+  <div id="loginModal" class="modal-overlay">
+    <div class="modal-container modal-sm">
+      <div class="modal-header">
+        <h3>🔐 로그인</h3>
+        <button class="modal-close" data-close="loginModal">&times;</button>
+      </div>
+      <form id="loginForm" class="modal-body">
+        <div class="form-group">
+          <label for="loginUserId">아이디</label>
+          <input type="text" id="loginUserId" required placeholder="아이디 입력" />
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">비밀번호</label>
+          <input type="password" id="loginPassword" required placeholder="비밀번호 입력" />
+        </div>
+        <div class="quick-login-hints">
+          <small class="text-muted">테스트 계정: <strong>admin</strong> / <strong>admin1234</strong> (관리자) | <strong>user1</strong> / <strong>1234</strong></small>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close="loginModal">취소</button>
+          <button type="submit" class="btn btn-primary">로그인</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. 프로필 & 닉네임 변경 모달 -->
+  <div id="profileModal" class="modal-overlay">
+    <div class="modal-container modal-sm">
+      <div class="modal-header">
+        <h3>👤 회원 정보 & 닉네임 변경</h3>
+        <button class="modal-close" data-close="profileModal">&times;</button>
+      </div>
+      <form id="profileForm" class="modal-body">
+        <div class="form-group">
+          <label>아이디</label>
+          <input type="text" id="profileUserId" disabled class="disabled-input" />
+        </div>
+        <div class="form-group">
+          <label>실명 (가입 성함)</label>
+          <input type="text" id="profileRealName" disabled class="disabled-input" />
+          <small class="help-text">가입 시 등록된 실명이며 보안을 위해 변경할 수 없습니다.</small>
+        </div>
+        <div class="form-group">
+          <label for="profileNickname">활동 닉네임 <span class="required">*</span></label>
+          <input type="text" id="profileNickname" required placeholder="새 활동 닉네임 입력" />
+          <small class="help-text">변경 즉시 모든 게시글, 댓글, 알림의 작성자명이 새 닉네임으로 갱신됩니다.</small>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close="profileModal">닫기</button>
+          <button type="submit" class="btn btn-primary">닉네임 저장</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 6. 비밀번호 확인 모달 (수정 / 삭제용) -->
+  <div id="passwordModal" class="modal-overlay">
+    <div class="modal-container modal-sm">
+      <div class="modal-header">
+        <h3 id="passwordModalTitle">🔑 권한 확인</h3>
+        <button class="modal-close" data-close="passwordModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="passwordModalDesc" class="password-desc">확인을 위해 비밀번호를 입력해주세요.</p>
+        <div class="form-group">
+          <input type="password" id="confirmPasswordInput" placeholder="비밀번호 입력" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close="passwordModal">취소</button>
+        <button type="button" id="confirmPasswordBtn" class="btn btn-primary">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 토스트 알림 메시지 영역 -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="public/app.js"></script>
+</body>
+</html>
